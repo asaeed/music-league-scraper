@@ -22,6 +22,12 @@ npm install
 ./run.sh
 ```
 
+### Windows
+
+```bat
+run.cmd
+```
+
 Or directly:
 
 ```bash
