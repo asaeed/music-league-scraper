@@ -24,10 +24,12 @@ Create a `.env` file (or copy `.env.example`):
 cp .env.example .env
 ```
 
-Set `ML_USER_ID` to the user id from your Music League profile URL.
+Edit `.env`:
 
-- If `ML_USER_ID` is empty: scrape all submitters (default)
-- If `ML_USER_ID` is set: scrape only that user’s submission
+- `ML_USER_ID`: your Music League user id from your profile URL (required)
+- `ML_SCRAPE_MODE`: 
+  - `all` (default) — scrape all submitters per round
+  - `single` — scrape only your submissions
 
 ## Run
 
@@ -54,11 +56,8 @@ On first run, a browser window will open. If you’re logged out, log into Music
 - CSV file: `musicleague-submissions.csv`
 - Columns: `League, Round, Submitter, Song, Artist, Album, Rank, Points, Voters`
 
-## Configure
-
-Edit `ML_USER_ID` in `.env`.
-
 ## Notes / Safety
 
 - `user-data/` contains cookies and local browser state. It is ignored by git via `.gitignore` and should not be committed.
+- `.env` contains your user id and is also ignored by git.
 - This is a best-effort scraper; if the Music League site changes, selectors may need updates.

@@ -4,12 +4,13 @@ const path = require('path');
 
 require('dotenv').config();
 
-// If ML_USER_ID is empty, scrape all submitters (default).
-// If ML_USER_ID is set, scrape only that user's submissions.
+// ML_USER_ID: your profile user id (required for navigation to find leagues)
 const ML_USER_ID = (process.env.ML_USER_ID ?? '').trim();
+// ML_SCRAPE_MODE: 'all' (default) scrapes all submitters, 'single' scrapes only your submissions
+const ML_SCRAPE_MODE = (process.env.ML_SCRAPE_MODE ?? 'all').trim().toLowerCase();
 const CSV_PATH = path.join(process.cwd(), 'musicleague-submissions.csv');
 
-const SCRAPE_ALL = ML_USER_ID.length === 0;
+const SCRAPE_ALL = ML_SCRAPE_MODE === 'all';
 
 function csvEscape(value) {
   const str = value == null ? '' : String(value);
@@ -24,7 +25,13 @@ function normalizePoints(pointsText) {
 
 async function scrapeMySubmissions() {
   console.log('Starting Music League scraper...');
-  console.log(`Mode: ${SCRAPE_ALL ? 'all submitters' : `single user (${ML_USER_ID})`}`);
+  console.log(`Mode: ${SCRAPE_ALL ? 'all submitters' : 'single user (you)'}`);
+  
+  if (!ML_USER_ID || ML_USER_ID.length === 0) {
+    console.error('\n❌ ML_USER_ID is required in .env (your Music League profile user id)');
+    console.error('   Set it to navigate to your profile and find your leagues.\n');
+    process.exit(1);
+  }
   
   // Initialize CSV file with header
   fs.writeFileSync(CSV_PATH, 'League,Round,Submitter,Song,Artist,Album,Rank,Points,Voters\n');
@@ -40,22 +47,20 @@ async function scrapeMySubmissions() {
   let totalSubmissions = 0;
   
   try {
-    const startUrl = ML_USER_ID.length > 0
-      ? `https://app.musicleague.com/user/${ML_USER_ID}/`
-      : 'https://app.musicleague.com/';
+    // Always navigate to your profile to find leagues
+    const startUrl = `https://app.musicleague.com/user/${ML_USER_ID}/`;
 
-    // Go to profile or homepage
-    console.log(`Opening Music League: ${startUrl}`);
+    console.log(`Opening your Music League profile...`);
     await page.goto(startUrl, { waitUntil: 'networkidle2' });
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Check if we need to log in
     const currentUrl = page.url();
     const looksLoggedOut = /\/login|\/signin|\/auth/i.test(currentUrl);
-    const wrongProfile = ML_USER_ID.length > 0 && !currentUrl.includes(ML_USER_ID);
+    const wrongProfile = !currentUrl.includes(ML_USER_ID);
     if (looksLoggedOut || wrongProfile) {
       console.log('\n⚠️  Please log in to Music League in the browser window...');
-      console.log('⚠️  After logging in, navigate back to the start page if needed');
+      console.log('⚠️  After logging in, navigate back to your profile if needed');
       console.log('⚠️  Then press Enter in this terminal to continue...\n');
       await waitForEnter();
     }
