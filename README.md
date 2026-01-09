@@ -16,6 +16,19 @@ Scrapes **your** Music League round submissions and writes them to a CSV.
 npm install
 ```
 
+## Configure
+
+Create a `.env` file (or copy `.env.example`):
+
+```bash
+cp .env.example .env
+```
+
+Set `ML_USER_ID` to the user id from your Music League profile URL.
+
+- If `ML_USER_ID` is empty: scrape all submitters (default)
+- If `ML_USER_ID` is set: scrape only that user’s submission
+
 ## Run
 
 ```bash
@@ -39,14 +52,11 @@ On first run, a browser window will open. If you’re logged out, log into Music
 ## Output
 
 - CSV file: `musicleague-submissions.csv`
-- Columns: `League, Round, Song, Artist, Album, Rank, Points, Voters`
+- Columns: `League, Round, Submitter, Song, Artist, Album, Rank, Points, Voters`
 
 ## Configure
 
-Edit the constants near the top of `ml-scraper.js`:
-
-- `USER_ID`: your Music League user id from your profile URL
-- The name passed into the page evaluator (currently hardcoded as `Ahmad Saeed`)
+Edit `ML_USER_ID` in `.env`.
 
 ## Notes / Safety
 

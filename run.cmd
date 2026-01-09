@@ -14,4 +14,4 @@ if not exist node_modules (
 )
 
 echo Running scraper...
-node ml-scraper.js
+node ml-scraper.js %*

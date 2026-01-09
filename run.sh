@@ -1,4 +1,4 @@
-bash#!/bin/bash
+#!/bin/bash
 if ! command -v node &> /dev/null; then
     echo "Node.js is not installed. Please install from https://nodejs.org/"
     exit 1
@@ -9,4 +9,4 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-node ml-scraper.js
+node ml-scraper.js "$@"
