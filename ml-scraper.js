@@ -8,7 +8,6 @@ require('dotenv').config();
 const ML_USER_ID = (process.env.ML_USER_ID ?? '').trim();
 // ML_SCRAPE_MODE: 'all' (default) scrapes all submitters, 'single' scrapes only your submissions
 const ML_SCRAPE_MODE = (process.env.ML_SCRAPE_MODE ?? 'all').trim().toLowerCase();
-const CSV_PATH = path.join(process.cwd(), 'musicleague-submissions.csv');
 
 const SCRAPE_ALL = ML_SCRAPE_MODE === 'all';
 
@@ -32,10 +31,6 @@ async function scrapeMySubmissions() {
     console.error('   Set it to navigate to your profile and find your leagues.\n');
     process.exit(1);
   }
-  
-  // Initialize CSV file with header
-  fs.writeFileSync(CSV_PATH, 'League,Round,Submitter,Song,Artist,Album,Rank,Points,Voters\n');
-  console.log(`Writing to: ${CSV_PATH}\n`);
   
   const browser = await puppeteer.launch({
     headless: false,
@@ -64,6 +59,22 @@ async function scrapeMySubmissions() {
       console.log('⚠️  Then press Enter in this terminal to continue...\n');
       await waitForEnter();
     }
+    
+    // Extract user's display name from profile (for single-user mode filename)
+    const userName = await page.evaluate(() => {
+      const nameElement = document.querySelector('h1, h2, .display-name, [class*="name"]');
+      return nameElement ? nameElement.textContent.trim() : '';
+    }).catch(() => '');
+    
+    // Construct CSV filename
+    const csvFilename = SCRAPE_ALL 
+      ? 'musicleague-submissions.csv'
+      : `musicleague-submissions-${userName.replace(/\s+/g, '-')}.csv`;
+    const CSV_PATH = path.join(process.cwd(), csvFilename);
+    
+    // Initialize CSV file with header
+    fs.writeFileSync(CSV_PATH, 'League,Round,Submitter,Song,Artist,Album,Rank,Points,Voters\n');
+    console.log(`Writing to: ${CSV_PATH}\n`);
     
     async function collectLeagueLinks() {
       return page.evaluate(() => {
